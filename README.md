@@ -2,6 +2,21 @@
 
 Interactive minimap for Level Design: combat, loot, and sampled movement from Feb 10–14, 2026.
 
+## Submission (Lila APM written test)
+
+| Deliverable | Link |
+|-------------|------|
+| **GitHub repository** (source + `README`, `ARCHITECTURE.md`, `INSIGHTS.md`, `player_data/`, `public/data/`) | [github.com/nandinivadlamuru/Lila-apm](https://github.com/nandinivadlamuru/Lila-apm) |
+| **Live app** (Netlify) | [nandinivadlamuru.netlify.app](https://nandinivadlamuru.netlify.app) |
+
+**Tech stack:** React 18, Vite, TypeScript, Leaflet, `leaflet.heat`; data pipeline Python + pandas/pyarrow (`convert.py`).
+
+**Environment variables:** none.
+
+**Docs in repo:** `ARCHITECTURE.md` (stack, data flow, coordinate mapping, assumptions, tradeoffs), `INSIGHTS.md` (three evidence-backed insights).
+
+> The assignment states that **only a GitHub repo link** is accepted for submission—not Google Drive or other doc links. Use the table above in your email; keep everything reviewers need **inside the repo**.
+
 ## Prerequisites
 
 - Node.js 18+
