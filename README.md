@@ -20,6 +20,15 @@ python3 convert.py
 
 ## Run the web app
 
+**From repo root** (recommended):
+
+```bash
+npm run install-web
+npm run dev
+```
+
+**Or** from `web/`:
+
 ```bash
 cd web
 npm install
@@ -31,10 +40,11 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 ## Production build
 
 ```bash
-cd web
 npm run build
 npm run preview
 ```
+
+(Run from repo root; same as `cd web && npm run …`.)
 
 Static assets (JSON + minimaps) are pulled from `../public/` via Vite’s `publicDir`.
 
