@@ -122,8 +122,13 @@ export default function App() {
         ...movement.filter((e) => eventToggles[e.event] && EVENT_MOVE.includes(e.event))
       );
     }
+    // Day filter must apply here (not only to the match dropdown), otherwise the map still
+    // shows all days when Match = "All matches".
+    if (date !== ALL_DATES) {
+      return evParts.filter((e) => e.date === date);
+    }
     return evParts;
-  }, [events, movement, eventToggles]);
+  }, [events, movement, eventToggles, date]);
 
   const timeRange = useMemo(() => {
     if (!combinedRaw.length) return { min: 0, max: 1 };
@@ -218,6 +223,7 @@ export default function App() {
 
           <section>
             <h2>Day</h2>
+            <p className="hint">Limits the map, stats, and timeline — not only the match list.</p>
             <select
               className="select"
               value={date}
