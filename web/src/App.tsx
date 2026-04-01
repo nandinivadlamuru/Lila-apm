@@ -37,11 +37,12 @@ async function fetchJson<T>(url: string): Promise<T> {
   return r.json() as Promise<T>;
 }
 
-function formatMs(ms: number): string {
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, "0")}`;
+/** Elapsed m:ss from range start (ts in JSON is absolute epoch ms; slider is linear between min/max). */
+function formatElapsedFromOrigin(absoluteMs: number, originMs: number): string {
+  const sec = Math.max(0, Math.floor((absoluteMs - originMs) / 1000));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 export default function App() {
@@ -320,29 +321,38 @@ export default function App() {
           <section>
             <h2>Timeline</h2>
             <p className="hint">
-              Scrub time for the current filters (pick a match for clearest “replay”). Play advances
-              the scrubber to the end.
+              Elapsed time within the <strong>current filters</strong> (first → last event). Pick{" "}
+              <strong>one match</strong> for a true replay — with “All matches”, timestamps from
+              different matches are mixed. <strong>Play</strong> scrubs forward; <strong>Start</strong>{" "}
+              jumps to the beginning.
             </p>
             <div className="timeline-row">
-              <span className="mono">{formatMs(timeRange.min)}</span>
+              <span className="mono">
+                {combinedRaw.length ? "0:00" : "—"}
+              </span>
               <input
                 type="range"
                 min={0}
                 max={100}
                 value={timelineMax}
+                disabled={loading || !combinedRaw.length}
                 onChange={(e) => {
                   setTimelineMax(Number(e.target.value));
                   setTimelinePlaying(false);
                 }}
                 className="range"
               />
-              <span className="mono">{formatMs(timeCutoff)}</span>
+              <span className="mono">
+                {combinedRaw.length
+                  ? `${formatElapsedFromOrigin(timeCutoff, timeRange.min)} / ${formatElapsedFromOrigin(timeRange.max, timeRange.min)}`
+                  : "—"}
+              </span>
             </div>
             <div className="timeline-actions">
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={loading}
+                disabled={loading || !combinedRaw.length}
                 onClick={() => {
                   if (timelinePlaying) {
                     setTimelinePlaying(false);
@@ -357,6 +367,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn"
+                disabled={!combinedRaw.length}
                 onClick={() => {
                   setTimelinePlaying(false);
                   setTimelineMax(0);
@@ -367,6 +378,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn"
+                disabled={!combinedRaw.length}
                 onClick={() => {
                   setTimelinePlaying(false);
                   setTimelineMax(100);
