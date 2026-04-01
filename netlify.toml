@@ -1,0 +1,12 @@
+# Netlify: repo root = project root. Build outputs to web/dist (Vite + public/data).
+# If Publish directory in the UI is wrong (e.g. `web` instead of `web/dist`), you get a 404.
+
+[build]
+  command = "npm install --prefix web && npm run build --prefix web"
+  publish = "web/dist"
+
+# Existing files ( /data/*, /assets/*, … ) are served first; everything else → SPA shell.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

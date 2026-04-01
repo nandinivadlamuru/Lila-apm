@@ -55,6 +55,17 @@ Static assets (JSON + minimaps) are pulled from `../public/` via Vite’s `publi
 3. Framework preset: **Vite**; build command `npm run build`, output `dist`.
 4. Ensure `public/` at the repo root (next to `web/`) contains `data/` and `minimaps/` — Vite copies them into `dist` on build. If you deploy only the `web` folder without the parent `public`, run `convert.py` and copy `public` up one level or adjust `vite.config.ts`.
 
+## Deploy (Netlify)
+
+The repo includes **`netlify.toml`** at the root. After you connect the Git repo:
+
+1. In **Site configuration → Build & deploy → Build settings**, either **clear** custom build/publish overrides so Netlify uses `netlify.toml`, **or** set them manually:
+   - **Build command:** `npm install --prefix web && npm run build --prefix web`
+   - **Publish directory:** `web/dist` (must be `dist`, not the `web` source folder)
+2. Trigger a new deploy. The generic “page not found” page almost always means **Publish directory** was set to `web` or `.` instead of **`web/dist`**, or the build failed (check the deploy log).
+
+`public/_redirects` is copied into `web/dist` so client routes still get `index.html` when you add routing later.
+
 ## Layout
 
 - `convert.py` — parquet → JSON
