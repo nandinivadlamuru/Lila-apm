@@ -4,46 +4,67 @@ Evidence below uses the **combat + loot JSON** exported from all five days (`*_e
 
 ---
 
-## 1. PvP is almost invisible in this slice — bots dominate the combat signal
+## Insight 1 — PvP is almost invisible in this slice; bots dominate the combat signal
 
-**What caught my eye:** On the map, “human vs human” kill markers are extremely rare compared with bot-related combat.
+### What caught your eye in the data
 
-**Back it up:** In the combined event export, human journey rows include only **3** `Kill` and **3** `Killed` events, versus **2,232** `BotKill` and **403** `BotKilled` (human rows). Storm deaths total **39** across all maps. So most “fighting” telemetry designers see in this window is **human ↔ bot**, not **human ↔ human**.
+On the map, “human vs human” kill markers are extremely rare compared with bot-related combat.
 
-**Actionable:** Treat bot tuning (density, difficulty, placement) as the primary lever for moment-to-moment combat feel in this dataset window; PvP hotspots may need different data (longer window, higher-pop playlists) to evaluate.
+### Back it up — pattern / stat
 
-**Metrics:** PvP engagement rate, bot:human elimination ratio, time-to-first-contact, retention after first bot encounter.
+In the combined event export, human journey rows include only **3** `Kill` and **3** `Killed` events, versus **2,232** `BotKill` and **403** `BotKilled` (human rows). Storm deaths total **39** across all maps. Most “fighting” telemetry in this window is **human ↔ bot**, not **human ↔ human**.
 
-**Why Level Design should care:** If layouts are balanced around PvP choke points but players mainly die to bots or the storm, spawn routes, sightlines, and cover should be revalidated for **bot pressure** and **rotation timing**, not only duels.
+### Actionable — metrics & items
 
----
+- **Do:** Prioritize bot tuning (density, difficulty, placement) for moment-to-moment combat in this dataset window; validate PvP on longer windows or higher-pop playlists if needed.
+- **Metrics:** PvP engagement rate, bot:human elimination ratio, time-to-first-contact, retention after first bot encounter.
 
-## 2. Storm deaths are rare but evenly split across the largest and smallest map
+### Why a Level Designer should care
 
-**What caught my eye:** Storm (`KilledByStorm`) is a small slice of deaths, but it is not concentrated on one map.
-
-**Back it up:** `KilledByStorm` counts — **AmbroseValley: 17**, **Lockdown: 17**, **GrandRift: 5** (39 total). Ambrose and Lockdown tie despite very different level sizes/playbooks in the product brief.
-
-**Actionable:** Audit storm timing vs. average extract path length **per map** (not globally). If Lockdown’s storm deaths are “too many” for its area, tighten safe windows or signage; if GrandRift is “too low,” verify whether players extract earlier or data volume is lower.
-
-**Metrics:** Storm death % of all deaths (per map), median time alive after first storm tick, extract success rate.
-
-**Why Level Design should care:** Storm is a one-way pressure mechanic; mismatches by map read as “unfair” or “boring” depending on whether players feel rushed or never threatened.
+If layouts are tuned for PvP choke points but players mainly die to bots or the storm, spawn routes, sightlines, and cover should be revalidated for **bot pressure** and **rotation timing**, not only duels.
 
 ---
 
-## 3. Loot events swamp everything else — movement must be turned on deliberately
+## Insight 2 — Storm deaths are rare but split across largest and smallest map
 
-**What caught my eye:** The default layer reads as “loot everywhere” if movement is off; the map looks busy even when combat is sparse.
+### What caught your eye in the data
 
-**Back it up:** Human journey rows include **12,770** `Loot` rows in the combat/loot export versus the tiny PvP counts above. Movement is stored in separate, downsampled files (`*_movement.json`) and is **off by default** in the UI so designers can focus on combat first.
+Storm (`KilledByStorm`) is a small slice of deaths, and it is not concentrated on one map.
 
-**Actionable:** When reviewing a map, use **heatmap → movement** after filtering to a **single match** to see pathing without point clutter; use loot heat to find **dead zones** (low pickup density) vs. **farms** (over-stacked areas).
+### Back it up — pattern / stat
 
-**Metrics:** Loot events per km² (tile), path coverage % of walkable minimap area, correlation between loot density and storm deaths.
+`KilledByStorm` counts: **AmbroseValley: 17**, **Lockdown: 17**, **GrandRift: 5** (39 total). Ambrose and Lockdown tie despite different level sizes/playbooks.
 
-**Why Level Design should care:** Unused space is wasted art and confusing navigation; over-dense loot areas flatten risk/reward and make other objectives feel optional.
+### Actionable — metrics & items
+
+- **Do:** Audit storm timing vs. average extract path length **per map** (not globally). Adjust safe windows or clarity on Lockdown if storm deaths feel high for area; investigate GrandRift if storm threat feels absent (extraction timing vs. sample size).
+- **Metrics:** Storm death % of all deaths (per map), median time alive after first storm tick, extract success rate.
+
+### Why a Level Designer should care
+
+Storm is one-way pressure; per-map mismatch reads as unfair (too rushed) or flat (never threatened).
 
 ---
 
-*These insights are meant to be validated interactively in the tool (filter map / match / heat modes) before you cite them verbatim in a live review.*
+## Insight 3 — Loot dominates the signal; movement is a deliberate layer
+
+### What caught your eye in the data
+
+With movement off, the map still looks busy—mostly loot—while combat markers are sparse.
+
+### Back it up — pattern / stat
+
+Human journey rows include **12,770** `Loot` rows in the combat/loot export versus the tiny PvP counts above. Movement lives in separate, downsampled `*_movement.json` files and is **off by default** so designers can focus on combat first.
+
+### Actionable — metrics & items
+
+- **Do:** Use **heatmap → movement** after filtering to a **single match** for pathing; use **loot heat** for dead zones vs. over-stacked farms.
+- **Metrics:** Loot events per map tile, path coverage % of walkable minimap, correlation between loot density and storm deaths.
+
+### Why a Level Designer should care
+
+Unused space wastes art and confuses navigation; over-dense loot flattens risk/reward and sidelines other objectives.
+
+---
+
+*Validate these in the live tool (map / match / heat modes) before citing them in your walkthrough.*

@@ -17,6 +17,23 @@ Interactive minimap for Level Design: combat, loot, and sampled movement from Fe
 
 > The assignment states that **only a GitHub repo link** is accepted for submission—not Google Drive or other doc links. Use the table above in your email; keep everything reviewers need **inside the repo**.
 
+### Pre-submit checklist (assignment)
+
+| Requirement | Where it’s covered |
+|-------------|-------------------|
+| Tool live at a hosted URL | [nandinivadlamuru.netlify.app](https://nandinivadlamuru.netlify.app) |
+| Full source in repo | `web/`, `convert.py`, `public/`, `player_data/` |
+| README: stack, setup, env vars | This file |
+| `ARCHITECTURE.md` (~1 page): stack/why, data flow, **coordinate mapping**, assumptions, tradeoffs | Root |
+| `INSIGHTS.md`: **3** insights with evidence, action, metrics, LD relevance | Root |
+| Player paths on minimap | Toggle **Human movement** / **Bot movement**; uses `x`/`z` → pixels per README |
+| Humans vs bots visually | Dashed amber outline = bot row; solid light = human (see sidebar Legend) |
+| Kill / death / loot / storm distinct | Marker colors by `event` type (`eventColors.ts`) |
+| Filter map / date / match | Sidebar selects |
+| Timeline / playback | Slider + **Play** / **Start** / **End** (best with **one match** selected) |
+| Heatmaps: kills, deaths, traffic | **Heat focus** → kills / deaths & storm / movement / loot |
+| Live walkthrough | You demo on the call |
+
 ## Prerequisites
 
 - Node.js 18+
