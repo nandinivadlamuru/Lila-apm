@@ -19,12 +19,14 @@ export function GameMap({
   showHeat,
   showDots,
   heatMode,
+  focusPosition,
 }: {
   imageUrl: string;
   events: GameEvent[];
   showHeat: boolean;
   showDots: boolean;
   heatMode: "all" | "deaths" | "kills" | "loot" | "movement";
+  focusPosition?: GameEvent | null;
 }) {
   const heatPoints = useMemo(() => {
     const pick = (ev: GameEvent): boolean => {
@@ -73,6 +75,32 @@ export function GameMap({
       >
         <ImageOverlay url={imageUrl} bounds={BOUNDS} />
         {showHeat && heatPoints.length > 0 && <HeatLayer points={heatPoints} />}
+        {focusPosition && (
+          <Pane name="focus" style={{ zIndex: 700 }}>
+            {(() => {
+              const [lat, lng] = pixelToLatLng(focusPosition.pixel_x, focusPosition.pixel_y);
+              return (
+                <CircleMarker
+                  center={[lat, lng]}
+                  radius={9}
+                  pathOptions={{
+                    color: "#f8fafc",
+                    weight: 3,
+                    fillColor: focusPosition.is_bot ? "#f59e0b" : "#38bdf8",
+                    fillOpacity: 0.9,
+                  }}
+                >
+                  <Tooltip direction="top" offset={[0, -8]} opacity={0.98} permanent>
+                    <div className="tip">
+                      <strong>Focus</strong>
+                      <div className="tip-sub">{focusPosition.user_id}</div>
+                    </div>
+                  </Tooltip>
+                </CircleMarker>
+              );
+            })()}
+          </Pane>
+        )}
         {showDots && (
           <Pane name="dots" style={{ zIndex: 450 }}>
             {dotEvents.map((e, i) => {
