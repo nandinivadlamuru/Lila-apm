@@ -37,7 +37,7 @@ async function fetchJson<T>(url: string): Promise<T> {
   return r.json() as Promise<T>;
 }
 
-/** Elapsed m:ss from range start (ts in JSON is absolute epoch ms). */
+/** Elapsed m:ss from range start (ts in JSON is absolute epoch ms; slider is linear between min/max). */
 function formatElapsedFromOrigin(absoluteMs: number, originMs: number): string {
   const sec = Math.max(0, Math.floor((absoluteMs - originMs) / 1000));
   const m = Math.floor(sec / 60);
@@ -66,7 +66,6 @@ export default function App() {
   const [timelineMax, setTimelineMax] = useState(100);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
   const playTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [focusUserId, setFocusUserId] = useState<string>(ALL_MATCHES);
 
   const loadMapData = useCallback(async (id: MapId) => {
     setLoading(true);
@@ -83,7 +82,6 @@ export default function App() {
       setMatchId(ALL_MATCHES);
       setTimelineMax(100);
       setTimelinePlaying(false);
-      setFocusUserId(ALL_MATCHES);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "Failed to load data");
       setEvents([]);
@@ -111,17 +109,6 @@ export default function App() {
     return all.filter((m) => m.date === date);
   }, [summary, mapId, date]);
 
-  // Base set for timeline range:
-  // - If a match is selected: use all rows for that match (events + movement), so the timeline spans the match.
-  // - Else: fall back to the currently enabled layers (combinedRaw).
-  const timelineBase = useMemo(() => {
-    const all = [...events, ...movement];
-    let rows = all;
-    if (date !== ALL_DATES) rows = rows.filter((e) => e.date === date);
-    if (matchId !== ALL_MATCHES) rows = rows.filter((e) => e.match_id === matchId);
-    return rows;
-  }, [events, movement, date, matchId]);
-
   const combinedRaw = useMemo(() => {
     const evParts: GameEvent[] = [];
     const moveOn = EVENT_MOVE.some((k) => eventToggles[k]);
@@ -145,16 +132,16 @@ export default function App() {
   }, [events, movement, eventToggles, date]);
 
   const timeRange = useMemo(() => {
-    if (!timelineBase.length) return { min: 0, max: 1 };
-    let min = timelineBase[0].ts_ms;
-    let max = timelineBase[0].ts_ms;
-    for (const e of timelineBase) {
+    if (!combinedRaw.length) return { min: 0, max: 1 };
+    let min = combinedRaw[0].ts_ms;
+    let max = combinedRaw[0].ts_ms;
+    for (const e of combinedRaw) {
       if (e.ts_ms < min) min = e.ts_ms;
       if (e.ts_ms > max) max = e.ts_ms;
     }
     if (max <= min) max = min + 1;
     return { min, max };
-  }, [timelineBase]);
+  }, [combinedRaw]);
 
   const timeCutoff = useMemo(() => {
     const { min, max } = timeRange;
@@ -170,32 +157,6 @@ export default function App() {
     if (!showBots) rows = rows.filter((e) => !e.is_bot);
     return rows;
   }, [combinedRaw, matchId, timeCutoff, showHumans, showBots]);
-
-  const focusCandidates = useMemo(() => {
-    if (matchId === ALL_MATCHES) return [];
-    // We need movement rows to locate a user/bot “at time T”.
-    // If a user has no movement samples, they won't appear here.
-    let rows = movement.filter((m) => m.match_id === matchId);
-    if (date !== ALL_DATES) rows = rows.filter((m) => m.date === date);
-    if (!showHumans) rows = rows.filter((m) => m.is_bot);
-    if (!showBots) rows = rows.filter((m) => !m.is_bot);
-    const ids = Array.from(new Set(rows.map((r) => r.user_id)));
-    ids.sort();
-    return ids;
-  }, [movement, matchId, date, showHumans, showBots]);
-
-  const focusPosition = useMemo(() => {
-    if (matchId === ALL_MATCHES) return null;
-    if (focusUserId === ALL_MATCHES) return null;
-    let rows = movement.filter((m) => m.match_id === matchId && m.user_id === focusUserId);
-    if (date !== ALL_DATES) rows = rows.filter((m) => m.date === date);
-    rows = rows.filter((m) => m.ts_ms <= timeCutoff);
-    if (!rows.length) return null;
-    // Find latest <= cutoff
-    let best = rows[0];
-    for (const r of rows) if (r.ts_ms >= best.ts_ms) best = r;
-    return best;
-  }, [movement, matchId, focusUserId, date, timeCutoff]);
 
   const stats = useMemo(() => {
     const counts: Partial<Record<EventKind, number>> = {};
@@ -300,29 +261,6 @@ export default function App() {
           </section>
 
           <section>
-            <h2>Focus (replay)</h2>
-            <p className="hint">
-              To answer “where is this bot/player at time T”, pick a single match, then choose a
-              user/bot. We’ll show their latest sampled position at the current timeline time.
-            </p>
-            <select
-              className="select match-select"
-              value={focusUserId}
-              onChange={(e) => setFocusUserId(e.target.value)}
-              disabled={loading || matchId === ALL_MATCHES || !focusCandidates.length}
-            >
-              <option value={ALL_MATCHES}>
-                {matchId === ALL_MATCHES ? "Select a match first" : "None"}
-              </option>
-              {focusCandidates.map((id) => (
-                <option key={id} value={id}>
-                  {id}
-                </option>
-              ))}
-            </select>
-          </section>
-
-          <section>
             <h2>Players</h2>
             <label className="check">
               <input
@@ -390,14 +328,14 @@ export default function App() {
             </p>
             <div className="timeline-row">
               <span className="mono">
-                {timelineBase.length ? "0:00" : "—"}
+                {combinedRaw.length ? "0:00" : "—"}
               </span>
               <input
                 type="range"
                 min={0}
                 max={100}
                 value={timelineMax}
-                disabled={loading || !timelineBase.length}
+                disabled={loading || !combinedRaw.length}
                 onChange={(e) => {
                   setTimelineMax(Number(e.target.value));
                   setTimelinePlaying(false);
@@ -405,7 +343,7 @@ export default function App() {
                 className="range"
               />
               <span className="mono">
-                {timelineBase.length
+                {combinedRaw.length
                   ? `${formatElapsedFromOrigin(timeCutoff, timeRange.min)} / ${formatElapsedFromOrigin(timeRange.max, timeRange.min)}`
                   : "—"}
               </span>
@@ -414,7 +352,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={loading || !timelineBase.length}
+                disabled={loading || !combinedRaw.length}
                 onClick={() => {
                   if (timelinePlaying) {
                     setTimelinePlaying(false);
@@ -429,7 +367,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn"
-                disabled={!timelineBase.length}
+                disabled={!combinedRaw.length}
                 onClick={() => {
                   setTimelinePlaying(false);
                   setTimelineMax(0);
@@ -440,7 +378,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn"
-                disabled={!timelineBase.length}
+                disabled={!combinedRaw.length}
                 onClick={() => {
                   setTimelinePlaying(false);
                   setTimelineMax(100);
@@ -496,7 +434,6 @@ export default function App() {
               showHeat={showHeat}
               showDots={showDots}
               heatMode={heatMode}
-              focusPosition={focusPosition}
             />
           )}
         </main>
